@@ -1,9 +1,9 @@
 # MetONTIIME extra diversity
-This repository is an expansion of [MetONTIIME](https://github.com/MaestSi/MetONTIIME) v2.1.0, with some extra QIIME2 commands to perform more diversity analyses.
+This repository is an expansion of [MetONTIIME2](https://github.com/MaestSi/MetONTIIME) v2.1.0, with some extra QIIME2 commands to perform more diversity analyses.
 
 ## Differences with MetONTIIME
 
-The main purpose of this MetONTIIME fork is to extend the pipeline's functionality by incorporating additional QIIME2 commands for calculating diversity-related metrics. 
+The main purpose of this MetONTIIME2 fork is to extend the pipeline's functionality by incorporating additional QIIME2 commands for calculating diversity-related metrics. 
 To achieve this, the `qiime diversity core-metrics` command, typically executed for the diversity analysis, has been omitted when the user is not filtering on specific taxa. 
 
 It is important to note that all analyses, except the rarefaction commands, are now executed with all available reads after downsampling.
