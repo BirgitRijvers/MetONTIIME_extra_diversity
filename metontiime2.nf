@@ -564,40 +564,169 @@ process diversityAnalyses {
 	"""
 		mkdir -p ${params.resultsDir}/diversityAnalyses
 		mkdir -p ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}
-
-		num_samples=\$(echo \$(cat ${params.sampleMetadata} | wc -l) -1 | bc)
-
-		if [ "\$num_samples" -gt 1 ]; then
-			qiime diversity core-metrics \
-			--i-table ${params.resultsDir}/collapseTables/table-collapsed-absfreq-level${params.taxaLevelDiversity}.qza \
-			--p-sampling-depth ${params.numReadsDiversity} \
-			--m-metadata-file ${params.sampleMetadata} \
-			--o-rarefied-table ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/rarefied-table.qza \
-			--o-observed-features-vector ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/observed-features-vector.qza \
-			--o-shannon-vector ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/shannon-vector.qza \
-			--o-evenness-vector ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/evenness-vector.qza \
-			--o-jaccard-distance-matrix ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/jaccard-distance-matrix.qza \
-			--o-bray-curtis-distance-matrix ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/bray-curtis-distance-matrix.qza \
-			--o-jaccard-pcoa-results ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/jaccard-pcoa-results.qza \
-			--o-bray-curtis-pcoa-results ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/bray-curtis-pcoa-results.qza \
-			--o-jaccard-emperor ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/jaccard-emperor.qzv \
-			--o-bray-curtis-emperor ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/bray-curtis-emperor.qzv;
-		fi
-
-		for f in \$(find ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity} | grep \"\\.qza\" | grep -v \"distance-matrix\"); do
-			
-			fn=\$(echo \$f | sed \'s/\\.qza//\');
-			
-			qiime metadata tabulate \
-			--m-input-file \$f \
-			--o-visualization \$fn".qzv";
-		done
-
+	
 		qiime diversity alpha-rarefaction \
 		--i-table ${params.resultsDir}/collapseTables/table-collapsed-absfreq-level${params.taxaLevelDiversity}.qza \
 		--p-max-depth ${params.numReadsDiversity} \
+		--p-metrics 'chao1' 'shannon' 'simpson' 'observed_features' \
 		--m-metadata-file ${params.sampleMetadata} \
 		--o-visualization ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/alpha-rarefaction.qzv
+	
+		qiime diversity alpha \
+		--i-table ${params.resultsDir}/collapseTables/table-collapsed-absfreq-level${params.taxaLevelDiversity}.qza \
+		--p-metric shannon \
+		--o-alpha-diversity ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/alpha-shannon
+	
+		qiime diversity alpha \
+		--i-table ${params.resultsDir}/collapseTables/table-collapsed-absfreq-level${params.taxaLevelDiversity}.qza \
+		--p-metric chao1 \
+		--o-alpha-diversity ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/alpha-chao1
+	
+		qiime diversity alpha \
+		--i-table ${params.resultsDir}/collapseTables/table-collapsed-absfreq-level${params.taxaLevelDiversity}.qza \
+		--p-metric simpson \
+		--o-alpha-diversity ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/alpha-simpson
+	
+		qiime diversity alpha \
+		--i-table ${params.resultsDir}/collapseTables/table-collapsed-absfreq-level${params.taxaLevelDiversity}.qza \
+		--p-metric observed_features \
+		--o-alpha-diversity ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/alpha-observed_features
+	
+		qiime diversity alpha-group-significance \
+		--i-alpha-diversity ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/alpha-chao1.qza \
+		--m-metadata-file ${params.sampleMetadata} \
+		--o-visualization ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/chao1_significance.qzv
+		
+		qiime diversity alpha-group-significance \
+		--i-alpha-diversity ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/alpha-shannon.qza \
+		--m-metadata-file ${params.sampleMetadata} \
+		--o-visualization ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/shannon_significance.qzv
+		
+		qiime diversity alpha-group-significance \
+		--i-alpha-diversity ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/alpha-simpson.qza \
+		--m-metadata-file ${params.sampleMetadata} \
+		--o-visualization ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/simpson_significance.qzv
+	
+		qiime diversity alpha-group-significance \
+		--i-alpha-diversity ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/alpha-observed_features.qza \
+		--m-metadata-file ${params.sampleMetadata} \
+		--o-visualization ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/observed_features_significance.qzv
+	
+		qiime diversity beta \
+		--i-table ${params.resultsDir}/collapseTables/table-collapsed-absfreq-level${params.taxaLevelDiversity}.qza \
+		--p-metric braycurtis \
+		--o-distance-matrix ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/braycurtis_matrix.qza
+	
+		qiime diversity beta \
+		--i-table ${params.resultsDir}/collapseTables/table-collapsed-absfreq-level${params.taxaLevelDiversity}.qza \
+		--p-metric jaccard \
+		--o-distance-matrix ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/jaccard_matrix.qza
+	
+		qiime diversity beta-rarefaction \
+		--i-table ${params.resultsDir}/collapseTables/table-collapsed-absfreq-level${params.taxaLevelDiversity}.qza \
+		--p-metric braycurtis \
+		--p-clustering-method nj \
+		--m-metadata-file ${params.sampleMetadata} \
+		--p-sampling-depth ${params.numReadsDiversity} \
+		--o-visualization ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/braycurtis_rarefaction.qzv
+	
+		qiime diversity beta-rarefaction \
+		--i-table ${params.resultsDir}/collapseTables/table-collapsed-absfreq-level${params.taxaLevelDiversity}.qza \
+		--p-metric jaccard \
+		--p-clustering-method nj \
+		--m-metadata-file ${params.sampleMetadata} \
+		--p-sampling-depth ${params.numReadsDiversity} \
+		--o-visualization ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/jaccard_rarefaction.qzv
+	
+		qiime diversity beta-group-significance \
+		--i-distance-matrix ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/braycurtis_matrix.qza \
+		--m-metadata-file ${params.sampleMetadata} \
+		--m-metadata-column patient \
+		--o-visualization ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/braycurtis_patient_significance.qzv \
+	
+		qiime diversity beta-group-significance \
+		--i-distance-matrix ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/jaccard_matrix.qza \
+		--m-metadata-file ${params.sampleMetadata} \
+		--m-metadata-column patient \
+		--o-visualization ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/jaccard_patient_significance.qzv \
+	
+		qiime diversity beta-group-significance \
+		--i-distance-matrix ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/braycurtis_matrix.qza \
+		--m-metadata-file ${params.sampleMetadata} \
+		--m-metadata-column sample-type \
+		--o-visualization ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/braycurtis_sample-type_significance.qzv \
+	
+		qiime diversity beta-group-significance \
+		--i-distance-matrix ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/jaccard_matrix.qza \
+		--m-metadata-file ${params.sampleMetadata} \
+		--m-metadata-column sample-type \
+		--o-visualization ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/jaccard_sample-type_significance.qzv \
+	
+		qiime diversity beta-group-significance \
+		--i-distance-matrix ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/braycurtis_matrix.qza \
+		--m-metadata-file ${params.sampleMetadata} \
+		--m-metadata-column sample-season \
+		--o-visualization ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/braycurtis_sample-season_significance.qzv \
+	
+		qiime diversity beta-group-significance \
+		--i-distance-matrix ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/jaccard_matrix.qza \
+		--m-metadata-file ${params.sampleMetadata} \
+		--m-metadata-column sample-season \
+		--o-visualization ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/jaccard_sample-season_significance.qzv \
+	
+		qiime diversity beta-group-significance \
+		--i-distance-matrix ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/braycurtis_matrix.qza \
+		--m-metadata-file ${params.sampleMetadata} \
+		--m-metadata-column paired-id \
+		--o-visualization ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/braycurtis_paired-id_significance.qzv \
+	
+		qiime diversity beta-group-significance \
+		--i-distance-matrix ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/jaccard_matrix.qza \
+		--m-metadata-file ${params.sampleMetadata} \
+		--m-metadata-column paired-id \
+		--o-visualization ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/jaccard_paired-id_significance.qzv \
+	
+		qiime diversity beta-group-significance \
+		--i-distance-matrix ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/braycurtis_matrix.qza \
+		--m-metadata-file ${params.sampleMetadata} \
+		--m-metadata-column patient-status \
+		--o-visualization ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/braycurtis_patient-status_significance.qzv \
+	
+		qiime diversity beta-group-significance \
+		--i-distance-matrix ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/jaccard_matrix.qza \
+		--m-metadata-file ${params.sampleMetadata} \
+		--m-metadata-column patient-status \
+		--o-visualization ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/jaccard_patient-status_significance.qzv \
+	
+		qiime diversity beta-group-significance \
+		--i-distance-matrix ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/braycurtis_matrix.qza \
+		--m-metadata-file ${params.sampleMetadata} \
+		--m-metadata-column status-id \
+		--o-visualization ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/braycurtis_status-id_significance.qzv \
+	
+		qiime diversity beta-group-significance \
+		--i-distance-matrix ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/jaccard_matrix.qza \
+		--m-metadata-file ${params.sampleMetadata} \
+		--m-metadata-column status-id \
+		--o-visualization ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/jaccard_status-id_significance.qzv 
+		
+		qiime diversity pcoa \
+		--i-distance-matrix ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/braycurtis_matrix.qza \
+		--o-pcoa ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/braycurtis_pcoa.qza
+	
+		qiime diversity pcoa \
+		--i-distance-matrix ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/jaccard_matrix.qza \
+		--o-pcoa ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/jaccard_pcoa.qza
+	
+		qiime emperor plot \
+		--i-pcoa ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/braycurtis_pcoa.qza \
+		--m-metadata-file ${params.sampleMetadata} \
+		--o-visualization ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/braycurtis_emperor.qzv \
+	
+		qiime emperor plot \
+		--i-pcoa ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/jaccard_pcoa.qza \
+		--m-metadata-file ${params.sampleMetadata} \
+		--o-visualization ${params.resultsDir}/diversityAnalyses/samplingDepth-${params.numReadsDiversity}-level${params.taxaLevelDiversity}/jaccard_emperor.qzv \
 	"""
 	else
 	"""
