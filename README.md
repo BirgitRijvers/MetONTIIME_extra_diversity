@@ -1,3 +1,41 @@
+# MetONTIIME extra diversity
+This repository is an expansion of [MetONTIIME](https://github.com/MaestSi/MetONTIIME) v2.1.0, with some extra QIIME2 commands to perform more diversity analyses.
+
+## Differences with MetONTIIME
+
+The main purpose of this MetONTIIME fork is to extend the pipeline's functionality by incorporating additional QIIME2 commands for calculating diversity-related metrics. 
+To achieve this, the `qiime diversity core-metrics` command, typically executed for the diversity analysis, has been omitted when the user is not filtering on specific taxa. 
+
+It is important to note that all analyses, except the rarefaction commands, are now executed with all available reads after downsampling.
+
+Additionally, the default parameters in the configuration file have been updated to reflect the settings used during the analysis of COPD microbiome data. 
+
+Instead of the core-metrics approach, the following commands are implemented:
+
+- **`qiime diversity alpha-rarefaction`**
+  - Configured with `--p-max-depth` set to the `numReadsDiversity` specified in metontiime2.conf
+  - Metrics include 'chao1', 'shannon', 'simpson', and 'observed_features'
+
+- **`qiime diversity alpha`**
+  - Metrics include 'chao1', 'shannon', 'simpson', and 'observed_features'
+
+- **`qiime diversity alpha-group-significance`**
+  - Applied to the outputs of `qiime diversity alpha` for metrics 'chao1', 'shannon', 'simpson', and 'observed_features'
+
+- **`qiime diversity beta-rarefaction`**
+  - Configured with `--p-clustering-method` set to neighbor joining ('nj')
+  - Configured with `--p-sampling-depth` set to the `numReadsDiversity` specified in metontiime2.conf
+  - Metrics include 'jaccard' and 'braycurtis'
+ 
+- **`qiime diversity beta`**
+  - Metrics include 'braycurtis' and 'jaccard'
+
+- **`qiime diversity pcoa`**
+  - Applied to the distance matrix outputs of `qiime diversity beta` for metrics 'jaccard' and 'braycurtis'
+
+- **`qiime emperor plot`**
+  - Generated based on the PCoA outputs of `qiime diversity pcoa` for metrics 'jaccard' and 'braycurtis'
+
 # MetONTIIME
 
 **MetONTIIME** is a Meta-barcoding pipeline for analysing ONT data in QIIME2 framework. Starting from v2.0.0, the pipeline is based on Nextflow, to allow for easier installation and better execution monitoring.
@@ -53,7 +91,7 @@ Other mandatory arguments which may be specified in the metontiime2.conf file
 --minQueryCoverage                                      Minimum query coverage for an alignment to be considered a candidate hit [0-1]
 --minIdentity                                           Minimum alignment identity for an alignment to be considered a candidate hit [0-1]
 --taxaLevelDiversity                                    Taxonomy level at which you want to perform non phylogeny-based diversity analyses
---numReadsDiversity                                     Max num. reads for diversity analyses
+--numReadsDiversity                                     Max num. reads for rarefaction analyses
 --taxaOfInterest                                        Taxa of interest that you want to retain and to focus the analysis on
 --minNumReadsTaxaOfInterest                             Minimum number of reads assigned to Taxa of interest to retain a sample
 --resultsDir                                            Path to directory containing results
